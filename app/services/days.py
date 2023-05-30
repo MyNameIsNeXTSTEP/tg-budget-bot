@@ -3,13 +3,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import LiteralString, cast
 
-from botanim_bot import config
-from botanim_bot.db import fetch_all
+from app import config
+from app.db import fetch_all
 
 # TODO: refactor - unbind dataclaasses and make SQL-speaaking objects
 
 @dataclass
-'''Represents in-day orders on incomes-expenses'''
 class Day:
     id: int
     monthNumber: str
@@ -26,14 +25,13 @@ class Day:
 class Category:
     id: int
     name: str
-    days: list[Day]
+    category_name: str
 
 
-async def getDaysWithinDateFrame(dateStart: str, dateFinish: str) -> Iterable[Category]:
-    sql = f"""{_getDaysBaseSql()}
-              ORDER BY c."ordering", b."ordering" """
+async def getDaysBaseInfo() -> Iterable[Day]:
+    sql = _getDaysBaseSql()
     days = await _getDaysFromDb(sql)
-    return _group_days_by_categories(days)
+    return _groupDaysByCategories(days)
 
 
 async def getNotStartedDays() -> Iterable[Category]:
@@ -41,7 +39,7 @@ async def getNotStartedDays() -> Iterable[Category]:
               WHERE b.read_start IS NULL
               ORDER BY c."ordering", b."ordering" """
     days = await _getDaysFromDb(sql)
-    return _group_days_by_categories(days)
+    return _groupDaysByCategories(days)
 
 
 async def getAlreadyReadDays() -> Iterable[Day]:
@@ -115,13 +113,13 @@ def format_day_name(book_name: str) -> str:
     return f"{day_name}. <i>{author}</i>"
 
 
-def _groupDaysByCategories(days: Iterable[Day]) -> Iterable[Category]:
-    categories = []
+def _groupDaysByCategories(days: Iterable[Day]) -> Iterable[Day]:
+    days = []
     categoryName = ''
     for day in days:
         if categoryName!= day.category_name:
             categories.append(
-                Category(name=day.category_name, days=[book])
+                Category(name=day.category_name, days=[day])
             )
             categoryName = day.category_name
             continue
@@ -135,13 +133,13 @@ def _getDaysBaseSql(select_param: LiteralString | None = None) -> LiteralString:
     """
 
 
-async def _getDaysFromDb(sql: LiteralString) -> list[Days]:
+async def _getDaysFromDb(sql: LiteralString) -> list[Day]:
     daysRaw = await fetch_all(sql)
     return [
         Day(
             id=day["id"],
             monthNumber=day["month_number"],
-            timeStamp=day["timeStamp"],
+            timeStamp=day["timestamp"],
             name=day["name"],
             paymentType=day["payment_type"],
             categoryName=day["category_name"],
@@ -149,5 +147,5 @@ async def _getDaysFromDb(sql: LiteralString) -> list[Days]:
             customComment=day["custom_comment"],
 
         )
-        for days in daysRaw
+        for day in daysRaw
     ]

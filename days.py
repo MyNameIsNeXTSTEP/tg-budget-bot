@@ -6,10 +6,9 @@ from typing import LiteralString, cast
 from botanim_bot import config
 from botanim_bot.db import fetch_all
 
-# TODO: refactor - unbind dataclaasses and make SQL-speaaking objects
+# TODO: later refactor - unbind dataclaasses and make SQL-speaaking objects
 
 @dataclass
-'''Represents in-day orders on incomes-expenses'''
 class Day:
     id: int
     monthNumber: str
@@ -29,11 +28,9 @@ class Category:
     books: list[Book]
 
 
-async def get_all_books() -> Iterable[Category]:
-    sql = f"""{_get_books_base_sql()}
-              ORDER BY c."ordering", b."ordering" """
-    books = await _get_books_from_db(sql)
-    return _group_books_by_categories(books)
+async def get_all_days() -> Iterable[Day]:
+    sql = _get_days_info_sql()
+    return await _getDaysFromDb(sql)
 
 
 async def get_not_started_books() -> Iterable[Category]:
@@ -52,11 +49,8 @@ async def get_already_read_books() -> Iterable[Book]:
     return await _get_books_from_db(sql)
 
 
-async def get_now_reading_books() -> Iterable[Book]:
-    sql = f"""{_get_books_base_sql()}
-              WHERE read_start<=current_date
-                  AND read_finish>=current_date
-              ORDER BY b.read_start"""
+async def showAllIncomes() -> Iterable[Book]:
+    sql = f"""SELECT * FROM income;"""
     return await _get_books_from_db(sql)
 
 
@@ -145,32 +139,28 @@ def _group_books_by_categories(books: Iterable[Book]) -> Iterable[Category]:
     return categories
 
 
-def _get_books_base_sql(select_param: LiteralString | None = None) -> LiteralString:
+def _get_days_info_sql(select_param: LiteralString | None = None) -> LiteralString:
     return f"""
-        SELECT
-            b.id as book_id,
-            b.name as book_name,
-            c.id as category_id,
-            c.name as category_name,
+        SELECT b.category_name,
             {select_param + "," if select_param else ""}
-            b.read_start, b.read_finish,
-            read_comments
-        FROM book b
-        LEFT JOIN book_category c ON c.id=b.category_id
+            b.timestamp, b.payment_type,
+        FROM days b
     """
 
 
-async def _get_books_from_db(sql: LiteralString) -> list[Book]:
-    books_raw = await fetch_all(sql)
+async def _getDaysFromDb(sql: LiteralString) -> list[Day]:
+    daysRaw = await fetch_all(sql)
     return [
-        Book(
-            id=book["book_id"],
-            name=book["book_name"],
-            category_id=book["category_id"],
-            category_name=book["category_name"],
-            read_start=book["read_start"],
-            read_finish=book["read_finish"],
-            read_comments=book["read_comments"],
+        Day(
+            id=day["id"],
+            monthNumber=day["month_number"],
+            timeStamp=day["timestamp"],
+            name=day["name"],
+            paymentType=day["payment_type"],
+            categoryName=day["category_name"],
+            price=day["price"],
+            customComment=day["custom_comment"],
+
         )
-        for book in books_raw
+        for day in daysRaw
     ]
