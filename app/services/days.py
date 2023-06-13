@@ -31,7 +31,8 @@ class Category:
 async def getDaysBaseInfo() -> Iterable[Day]:
     sql = _getDaysBaseSql()
     days = await _getDaysFromDb(sql)
-    return _groupDaysByCategories(days)
+    # return _groupDaysByCategories(days)
+    return days
 
 
 async def getNotStartedDays() -> Iterable[Category]:
@@ -116,6 +117,7 @@ def format_day_name(book_name: str) -> str:
 def _groupDaysByCategories(days: Iterable[Day]) -> Iterable[Day]:
     days = []
     categoryName = ''
+    categories = []
     for day in days:
         if categoryName!= day.category_name:
             categories.append(
@@ -128,9 +130,7 @@ def _groupDaysByCategories(days: Iterable[Day]) -> Iterable[Day]:
 
 
 def _getDaysBaseSql(select_param: LiteralString | None = None) -> LiteralString:
-    return f"""
-        SELECT * FROM days
-    """
+    return 'SELECT * FROM days'
 
 
 async def _getDaysFromDb(sql: LiteralString) -> list[Day]:
@@ -145,7 +145,6 @@ async def _getDaysFromDb(sql: LiteralString) -> list[Day]:
             categoryName=day["category_name"],
             price=day["price"],
             customComment=day["custom_comment"],
-
         )
         for day in daysRaw
     ]

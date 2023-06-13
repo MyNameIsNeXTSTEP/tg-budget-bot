@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 if not config.TELEGRAM_BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN env variables "
-                     "wasn't implemented in .env (both should be initialized).")
+        "wasn't implemented in .env (both should be initialized).")
 
 def main():
     application = ApplicationBuilder().token(config.TELEGRAM_BOT_TOKEN).build()
@@ -29,7 +29,9 @@ def main():
         'days': get_days_handler,
     }
     for command_name, command_handler in COMMAND_HANDLERS.items():
-        application.add_handler(CommandHandler(command_name, command_handler))
+        application.add_handler(
+            CommandHandler(command_name, command_handler)
+        )
 
     # CALLBACK_QUERY_HANDLERS = {
     #     rf"^{config.ALL_BOOKS_CALLBACK_PATTERN}(\d+)$": handlers.all_books_button,

@@ -25,7 +25,7 @@ class Day:
 class Category:
     id: int
     name: str
-    books: list[Book]
+    days: list[Day]
 
 
 async def get_all_days() -> Iterable[Day]:
@@ -41,7 +41,7 @@ async def get_not_started_books() -> Iterable[Category]:
     return _group_books_by_categories(books)
 
 
-async def get_already_read_books() -> Iterable[Book]:
+async def get_already_read_books() -> Iterable[Day]:
     sql = f"""{_get_books_base_sql()}
               WHERE read_start<current_date
                   AND read_finish  <= current_date
@@ -49,7 +49,7 @@ async def get_already_read_books() -> Iterable[Book]:
     return await _get_books_from_db(sql)
 
 
-async def showAllIncomes() -> Iterable[Book]:
+async def showAllIncomes() -> Iterable[Day]:
     sql = f"""SELECT * FROM income;"""
     return await _get_books_from_db(sql)
 
@@ -78,7 +78,7 @@ def calculate_category_books_start_index(
     return start_index
 
 
-async def get_books_by_positional_numbers(numbers: Iterable[int]) -> tuple[Book]:
+async def get_books_by_positional_numbers(numbers: Iterable[int]) -> tuple[Day]:
     numbers_joined = ", ".join(map(str, map(int, numbers)))
 
     hardcoded_sql_values = []
@@ -125,13 +125,13 @@ def format_book_name(book_name: str) -> str:
     return f"{book_name}. <i>{author}</i>"
 
 
-def _group_books_by_categories(books: Iterable[Book]) -> Iterable[Category]:
+def _group_books_by_categories(books: Iterable[Day]) -> Iterable[Category]:
     categories = []
     category_id = None
     for book in books:
         if category_id != book.category_id:
             categories.append(
-                Category(id=book.category_id, name=book.category_name, books=[book])
+                Category(id=book.category_id, name=book.category_name, books=[Day])
             )
             category_id = book.category_id
             continue

@@ -12,6 +12,7 @@ from app.templates import render_template
 
 async def all_days(update: Update, context: ContextTypes.DEFAULT_TYPE):
     some_days_info = list(await getDaysBaseInfo())
+    print(some_days_info, '__SOME_DAYS_INFO__')
     if not update.message:
         return
 
