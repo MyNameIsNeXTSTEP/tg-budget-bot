@@ -26,5 +26,6 @@ async def send_response(
 
 
 def _get_chat_id(update: Update) -> int:
+    logger.warning('__USER_CHAT_ID_')
     logger.warning(update.effective_user.id)
     return cast(Chat, update.effective_chat).id

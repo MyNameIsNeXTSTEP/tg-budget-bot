@@ -3,21 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import LiteralString, cast
 
-from app import config
 from app.db import fetch_all
-
-# TODO: refactor - unbind dataclaasses and make SQL-speaaking objects
-
-@dataclass
-class Day:
-    id: int
-    monthNumber: str
-    timeStamp: str
-    name: str
-    paymentType: int
-    categoryName: int
-    price: int
-    customComment: str
 
 
 # TODO refactor Categories handling
@@ -26,6 +12,28 @@ class Category:
     id: int
     name: str
     category_name: str
+
+
+# TODO: refactor - unbind dataclaasses and make SQL-speaaking objects
+@dataclass
+class Day:
+    id: int
+    timeStamp: str
+    name: str
+    paymentType: int
+    categoryName: int
+    price: int
+    customComment: str
+
+    def dayDigest(self)->dict:
+        return {
+            'Время': self.timeStamp,
+            'Имя': self.name,
+            'Тип': 'Доход' if self.paymentType == 0 else 'Расход',
+            'Категория': self.categoryName,
+            'Размер': f'{self.price} ₽',
+            'Заметка': f'"{self.customComment}"',
+        }
 
 
 async def getDaysBaseInfo() -> Iterable[Day]:
@@ -138,13 +146,12 @@ async def _getDaysFromDb(sql: LiteralString) -> list[Day]:
     return [
         Day(
             id=day["id"],
-            monthNumber=day["month_number"],
             timeStamp=day["timestamp"],
             name=day["name"],
             paymentType=day["payment_type"],
             categoryName=day["category_name"],
             price=day["price"],
             customComment=day["custom_comment"],
-        )
+        ).dayDigest()
         for day in daysRaw
     ]
