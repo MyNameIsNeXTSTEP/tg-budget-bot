@@ -55,7 +55,7 @@ create table months (
   -- foreign key(id) references income_category(id), ?
 );
 
--- Daytime table sheet:
+-- Daytime table:
 create table days (
   id integer primary key,
   month_number integer not null,

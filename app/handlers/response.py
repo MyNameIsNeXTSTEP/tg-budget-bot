@@ -1,9 +1,11 @@
 from typing import cast
 
+import logging
 import telegram
 from telegram import Chat, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
+logger = logging.getLogger(__name__)
 
 async def send_response(
     update: Update,
@@ -24,4 +26,6 @@ async def send_response(
 
 
 def _get_chat_id(update: Update) -> int:
+    logger.warning('__USER_CHAT_ID_')
+    logger.warning(update.effective_user.id)
     return cast(Chat, update.effective_chat).id

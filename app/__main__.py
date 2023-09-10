@@ -8,9 +8,9 @@ from telegram.ext import (
 )
 
 from app.db import close_db
-
 from app import config
-from app.handlers import start as start_hanler
+from app.handlers import start as start_handler
+from app.handlers import all_days as get_days_handler
 
 
 logging.basicConfig(
@@ -18,20 +18,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 if not config.TELEGRAM_BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN env variables "
-                     "wasn't implemented in .env (both should be initialized).")
-
+        "wasn't implemented in .env (both should be initialized).")
 
 def main():
     application = ApplicationBuilder().token(config.TELEGRAM_BOT_TOKEN).build()
-
     COMMAND_HANDLERS = {
-        "start": start_hanler,
+        'start': start_handler,
+        'days': get_days_handler,
     }
     for command_name, command_handler in COMMAND_HANDLERS.items():
-        application.add_handler(CommandHandler(command_name, command_handler))
+        application.add_handler(
+            CommandHandler(command_name, command_handler)
+        )
 
     # CALLBACK_QUERY_HANDLERS = {
     #     rf"^{config.ALL_BOOKS_CALLBACK_PATTERN}(\d+)$": handlers.all_books_button,
@@ -50,9 +50,9 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        logger.warning('msg')
     except Exception:
         import traceback
-
         logger.warning(traceback.format_exc())
     finally:
         close_db()
